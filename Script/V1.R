@@ -6,7 +6,7 @@ p_load("readxl", "tidyverse", "ggthemes", "tidysynth", "Synth", "TTR", "zoo",
 
 # DELITOS
 
-url <- "https://raw.githubusercontent.com/marcomna/Control-Sintetico/main/Datos/IDEFC_NM_abr24.csv?token=GHSAT0AAAAAACTP3PHW5QI52XTFDBT6PNWGZTIROGA"
+url <- "https://raw.githubusercontent.com/marcomna/Control-Sintetico/main/Datos/IDEFC_NM_abr24.csv?token=GHSAT0AAAAAACTP3PHWGNFTFMGHHNUWCOUGZTJYRXA"
 
 # Nombre temporal del archivo
 temp_file <- tempfile(fileext = ".csv")
@@ -21,7 +21,7 @@ delitos <- read_csv(temp_file, locale = locale(encoding = "UTF-8"))
 # POBLACIÓN
 
 # URL del archivo CSV en GitHub
-url1 <- "https://raw.githubusercontent.com/marcomna/Control-Sintetico/main/Datos/poblacion.csv?token=GHSAT0AAAAAACTP3PHXRJNQY2J2NGAAT46YZTIROMQ"
+url1 <- "https://raw.githubusercontent.com/marcomna/Control-Sintetico/main/Datos/poblacion.csv?token=GHSAT0AAAAAACTP3PHXM6WPVRCQ67ENJK5UZTJYR7Q"
 
 # Nombre temporal del archivo
 temp_file1 <- tempfile(fileext = ".csv")
@@ -88,7 +88,7 @@ delitosCS <- delitosCS %>%
 delitosCS <- delitosCS %>% 
   mutate(Entidad = as.factor(Entidad))
 
-####################### SUAVIZACIÓN ########################
+####################### SUAVIZACIÓN LOESS ########################
 
 # Función para aplicar suavizado LOESS a una columna
 apply_loess_smoothing <- function(column, span = 0.3) {
@@ -105,6 +105,28 @@ delitosCS_smooth <- delitosCS %>%
   group_by(Entidad) %>%
   mutate(across(3:62, ~ apply_loess_smoothing(.)))
 
+####################### SUAVIZACIÓN MOVING AVERAGE ########################
+
+# Función para aplicar medias móviles a una columna
+#apply_moving_average <- function(column, n = 3) {
+#  if (sum(!is.na(column)) >= n) {
+#    smoothed <- rollmean(column, k = n, fill = NA, align = "right")
+#    # Reemplazar los NAs iniciales con los valores originales
+#   na_indices <- which(is.na(smoothed))
+#    smoothed[na_indices] <- column[na_indices]
+#    return(smoothed)
+#  } else {
+#    return(column)
+#  }
+#}
+
+# Aplicar medias móviles a las columnas de la 3 a la 62
+#delitosCS_smooth_ma <- delitosCS %>%
+#  arrange(Fecha) %>%
+#  group_by(Entidad) %>%
+#  mutate(across(3:62, ~ apply_moving_average(.)))
+
+# delitosCS_smooth <- delitosCS_smooth_ma
 
 
 ################# CONTROL SINTÉTICO ##############
@@ -121,7 +143,7 @@ CSdelitos <- delitosCS_smooth %>%
   generate_predictor(time_window = c(as.Date("2017-01-01"), as.Date("2018-12-01")),
                      rapto = mean(`Con violencia`, na.rm = TRUE),
                      allanamiento = mean(`Robo de motocicleta Con violencia`, na.rm = TRUE),
-                     violacion = mean(`Violación simple`, na.rm = TRUE),
+                     # violacion = mean(`Violación simple`, na.rm = TRUE),
                      narcomenudeo = mean(Narcomenudeo, na.rm = TRUE),
                      coches = mean(`Robo de coche de 4 ruedas Con violencia`, na.rm = TRUE)) %>%
   generate_predictor(time_window = as.Date("2017-01-01"),
@@ -168,7 +190,7 @@ principalCSdelitos %>%
   geom_line(aes(time_unit, real_y), size = 1, color = "#363537") +
   geom_line(aes(time_unit, synth_y), size = 1, color = "#EF2D56") +
   theme_clean() +
-  labs(title="Delitos con armas de fuego por cada 100 000 habitantes, \n CDMX observada vs. CDMX sintética.\nSuavizado por LOESS",
+  labs(title="Delitos con armas de fuego por cada 100 000 habitantes, \n CDMX observada vs. CDMX sintética.\nSuavizado por promedios móviles",
        x = "Fecha", y = "Incidencia", caption = "\n Fuente: Elaboración propia con datos del SESNSP y Sedena. \n \n Nota: La línea punteada vertical indica el inicio del programa 'Sí al desarme, sí a la paz'.") +
   scale_x_date(limits = c(as.Date("2017-01-01"), as.Date("2023-12-01")),
                breaks = seq(as.Date("2017-01-01"), as.Date("2023-12-01"), by = "3 months"), 
@@ -180,7 +202,7 @@ principalCSdelitos %>%
   geom_vline(xintercept = as.Date("2019-01-01"), linetype = "dashed", size = 1.1) +
   annotate("text", x = as.Date("2020-05-01"), y = 1.9, label = "Observada", size = 5, fontface = "bold", color = "#363537") +
   annotate("text", x = as.Date("2020-05-01"), y = 2.9, label = "Sintética", size = 5, fontface = "bold", color = "#EF2D56") +
-  scale_y_continuous(limits = c(0.5, 3.0))
+  scale_y_continuous(limits = c(0.5, 3.7))
 
 
 # Ratio MSPE
@@ -198,7 +220,7 @@ MSPEdelitos %>%
   geom_bar(stat='identity', fill = "#ED7D3A") +
   theme_clean() +
   labs(title="Ratio de MSPE pre y postratamiento \n de CDMX y 27 unidades de control.",
-       x = "Ratio", y = "Entidad federativa", caption = "\n Fuente: Elaboración propia con datos del SESNSP y Sedena. \n \n Nota: Formalmente, este ratio representa la razón del error predictivo cuadrado medio postratamiento con respecto al error predictivo cuadrado medio pretratamiento. Intuitivamente, indica qué tanto cada estado sufrió un cambio de \n comportamiento o tendencia a partir del inicio del programa 'Sí al desarme, sí a la paz'. Por lo tanto, el hecho de que la Ciudad de México sea, por mucho, el primer lugar robustece enormemente los resultados.")+
+       x = "Ratio", y = "Entidad federativa", )+
   theme(plot.title = element_text(hjust = 0.5, size = 14,face="bold"), axis.title=element_text(size=12,face="bold"),
         axis.text=element_text(size=10), plot.caption = element_text(hjust = 0))
 
@@ -218,7 +240,7 @@ MSPEdelitos %>%
   geom_point(aes(unit_name, fishers_exact_pvalue), size = 6, color = "#8CD867", fill = "black") +
   theme_clean() +
   labs(title="Niveles de significancia de un efecto de tratamiento sobre la \n variable resultado para todas las entidades federativas.",
-       x = "Entidad", y = "p-value", caption = "\n Fuente: Elaboración propia con datos del SESNSP y Sedena. \n \n Nota: Los valores p graficados ilustran la significancia estadística de los ratios de los errores predictivos cuadrados medios post y pretratamiento. Indican la probabilidad de que un cambio de tendencia en los \n delitos con armas de fuego a partir de enero de 2019 haya sido enteramente por el azar. Es decir, mientras más bajo el valor reportado, más probable que haya existido un efecto de tratamiento en enero de 2019 \n en la entidad respectiva.")+
+       x = "Entidad", y = "p-value")+
   theme(plot.title = element_text(hjust = 0.5, size = 14,face="bold"), axis.title=element_text(size=10,face="bold"),
         axis.text.x = element_text(angle = 65, hjust =1), plot.caption = element_text(hjust = 0)) +
   scale_y_continuous(breaks = seq(0, 1, 0.1))
