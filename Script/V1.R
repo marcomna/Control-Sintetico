@@ -6,7 +6,7 @@ p_load("readxl", "tidyverse", "ggthemes", "tidysynth", "Synth", "TTR", "zoo",
 
 # DELITOS
 
-url <- "https://raw.githubusercontent.com/marcomna/Control-Sintetico/main/Datos/IDEFC_NM_abr24.csv?token=GHSAT0AAAAAACTP3PHWGNFTFMGHHNUWCOUGZTJYRXA"
+url <- "https://raw.githubusercontent.com/marcomna/Control-Sintetico/main/Datos/IDEFC_NM_abr24.csv"
 
 # Nombre temporal del archivo
 temp_file <- tempfile(fileext = ".csv")
@@ -21,7 +21,7 @@ delitos <- read_csv(temp_file, locale = locale(encoding = "UTF-8"))
 # POBLACIÓN
 
 # URL del archivo CSV en GitHub
-url1 <- "https://raw.githubusercontent.com/marcomna/Control-Sintetico/main/Datos/poblacion.csv?token=GHSAT0AAAAAACTP3PHXM6WPVRCQ67ENJK5UZTJYR7Q"
+url1 <- "https://raw.githubusercontent.com/marcomna/Control-Sintetico/main/Datos/poblacion.csv"
 
 # Nombre temporal del archivo
 temp_file1 <- tempfile(fileext = ".csv")
