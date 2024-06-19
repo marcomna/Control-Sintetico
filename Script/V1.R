@@ -327,7 +327,7 @@ principalCSdelitos %>%
   geom_line(aes(time_unit, real_y), size = 1, color = "#363537") +
   geom_line(aes(time_unit, synth_y), size = 1, color = "#EF2D56") +
   theme_clean() +
-  labs(title="Delitos con armas de fuego por cada 100 000 habitantes, \n CDMX observada vs. CDMX sintética.\nSuavizado por promedios móviles",
+  labs(title="Delitos con armas de fuego por cada 100 000 habitantes, \n CDMX observada vs. CDMX sintética.\nSuavizado por LOESS",
        x = "Fecha", y = "Incidencia", caption = "\n Fuente: Elaboración propia con datos del SESNSP y Sedena. \n \n Nota: La línea punteada vertical indica el inicio del programa 'Sí al desarme, sí a la paz'.") +
   scale_x_date(limits = c(as.Date("2017-01-01"), as.Date("2022-12-01")),
                breaks = seq(as.Date("2017-01-01"), as.Date("2022-12-01"), by = "3 months"), 
